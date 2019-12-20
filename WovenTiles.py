@@ -17,7 +17,7 @@ def average(pixels):
             av = av + rgb #add the value to the total sum
     return (av/count)/255 #return the rounded average
 
-# comppotes the brightness average brightness for each box
+# computes the brightness average brightness for each box
 def getBrightness(pixels, dim, width, height):
     brightness = [] #initialize all of the brightnesses
     for i in range(0, width, dim): #for each row of pixel/square of pixels
@@ -27,8 +27,8 @@ def getBrightness(pixels, dim, width, height):
             for k in range(dim): #for each pixel in the square of pixels
                 for l in range(dim): 
                     pix.append(pixels[i+k,j+l]) #add the pixels to the list of 
-            bright.append(average(pix))
-        brightness.append(bright)
+            bright.append(average(pix)) #adds the pixel brightness to the row
+        brightness.append(bright) #adds the row to the whole list
     return brightness
 
 # adds our weave pattern to the pixels in our new image
@@ -95,7 +95,7 @@ def getVectors(pixels):
 def getRopes(vectors, half, threshold):
     ropes = [] #initialize our rope output
     n = sum(vectors[0])/len(vectors[0]) #calculate the average needed to pick a color
-    for vector in vectors:
+    for vector in vectors: #for both our row and column vector
         x = 0 #initialize counter of how many times in a row a color is picked
         rows = [] #initialize the list of ropes for the given vector
         for row in vector: #for each row in the row vector
@@ -130,6 +130,21 @@ def getRopes(vectors, half, threshold):
                         x = 1 #reset the counter to 1
                         rows.append('white') #add a white rope
         ropes.append(rows) #add the list of ropes to our output
+    return ropes
+
+# optimize the color of the ropes based on two ropes
+def getRopes2(vectors):
+    ropes = [] #initialize the list to hols the row and column rope colors
+    for vector in vectors: #tfor both the row and column vectors
+        rows = [] #initialize the list of rope colors
+        for i in range(0, len(vector), 2): #for each rows brightness
+            if vector[i] > vector[i+1]: #if the brightness of the first row is brighter than the second
+                rows.append('white') #add a white rope
+                rows.append('black') #add a black rope
+            else: #if the brightness of the second row is brighter than the first
+                rows.append('black') #add a black rope
+                rows.append('white') #add a white rope
+        ropes.append(rows) #add the ropes to our list
     return ropes
 
 # decides the pattern for each pixel based only on whether each pixel is brighter or darker than an average with three divisions
@@ -234,14 +249,16 @@ def main():
     except: #if there is no sixth argument
         threshold = -1 #set a variable for the threshold of how many ropes of the same color can be added in the third decision
     image = Image.open(fname).convert("RGB") #open the desired image in the RGB format
-    width = image.size[0] - image.size[0]%dim #calculate the width of the image 
+    width = image.size[0] - image.size[0]%dim  #calculate the width of the image 
     height = image.size[1] - image.size[1]%dim #calculate the height of the image
+    if decide == 4: #if we optimize with pattern 4
+        width = width - width%(dim*2) #make sure the width is divisible by 2
+        height = height - height%(dim*2) #make sure the height is divisible by 2
     pixels = image.load() #load the RGB values of image
     brightness = getBrightness(pixels, dim, width, height) #get the average brightnesses of each pixel
-    #divs = getDivs(brightness) #gets the median divisions of all the pixel brightnesses
-    divs = [0.25, 0.5, 0.75] #sets the divisions of pixel brightnesses to even divisions of 1
+    divs = getDivs(brightness) #gets the median divisions of all the pixel brightnesses
+    #divs = [0.25, 0.5, 0.75] #sets the divisions of pixel brightnesses to even divisions of 1
     vectors = getVectors(brightness) #get the row and column vectors
-    ropes = getRopes(vectors, divs[1], threshold) #get the rope colors
     newWidth = int((width/dim)*newDim) #calculate the width of our ouputed image
     newHeight = int((height/dim)*newDim) #calculate the height of our outputed image
     newPic = Image.new("RGB", (newWidth, newHeight), "grey") #initialize a blank image for output
@@ -251,13 +268,17 @@ def main():
     elif decide == 2: #if we want to decide the patterns with type 2
         patterns = decide2(brightness, divs[1]) #get the pattern for each pixel
     elif decide == 3: #if we want to decide the patterns with type 3
+        ropes = getRopes(vectors, divs[1], threshold) #get the rope colors
+        patterns = decide3(brightness, ropes, divs[1]) #get the pattern for each pixel
+    elif decide == 4: #if we want to decide the patterns with type 4
+        ropes = getRopes2(vectors) #get the special rope colors
         patterns = decide3(brightness, ropes, divs[1]) #get the pattern for each pixel
     cost = round(getCost(brightness, patterns, divs[0], divs[2])) #calculate the cost of the new image
     makeWeave(patterns, newPixels, newWidth, newHeight, thickness, newDim) #add the tile pattern to our new image
     newPic.show() #display our new image
-    newFile = fname[:3] + '-' + str(dim) + '-' + str(decide) + '-' + str(cost) #create a file name for the image to be saved to
-    #print(newFile) #print the file name
-    #newPic.save(newFile, 'bmp') #save the new image
+    newFile = fname[:3] + '-' + str(dim) + '-' + str(decide) + '-' + str(cost) + '.jpg' #create a file name for the image to be saved to
+    print(newFile) #print the file name
+    newPic.save(newFile, "JPEG") #save the new image
     
 if __name__ == "__main__":
     main()

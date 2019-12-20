@@ -61,7 +61,14 @@ Further description of each argument:
             the ropes are chosen, we once again choose white on black or black on white based
             on the brightness of that specific pixel. It usually ends up looking pretty patchy,
             because it turns out that most images have large patches of similarly bright pixels. 
-
+        Pattern 4:
+            In this pattern, we optimized between every two consecutive ropes. By this we mean
+            given two consecutive rows, if the first row had a higher average brightness than
+            the second row, we would add a white rope then a black rope. If the second rope had
+            a higher average brightness then we would add a black rope and then a white rope. After
+            this, we would look at the next two ropes and repeat. Then the individual pixels are
+            decided by the same way as pattern 3 and 4.
+    
     arg6: Rope threshold
         This argument is an integer number of the desired number of ropes of the same color the
         user wants to allow the program to have in a row. For example, if the number 3 is chosen

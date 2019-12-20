@@ -276,9 +276,9 @@ def main():
     cost = round(getCost(brightness, patterns, divs[0], divs[2])) #calculate the cost of the new image
     makeWeave(patterns, newPixels, newWidth, newHeight, thickness, newDim) #add the tile pattern to our new image
     newPic.show() #display our new image
-    newFile = fname[:3] + '-' + str(dim) + '-' + str(decide) + '-' + str(cost) + '.jpg' #create a file name for the image to be saved to
-    print(newFile) #print the file name
-    newPic.save(newFile, "JPEG") #save the new image
+    #newFile = fname[:3] + '-' + str(dim) + '-' + str(decide) + '-' + str(cost) + '.jpg' #create a file name for the image to be saved to
+    #print(newFile) #print the file name
+    #newPic.save(newFile, "JPEG") #save the new image
     
 if __name__ == "__main__":
     main()
